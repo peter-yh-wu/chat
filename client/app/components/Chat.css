@@ -1,0 +1,30 @@
+.button {
+  border-radius: 8px;
+  background-color: white;
+  color: black;
+  border: 2px solid #555555;
+  font-size: 12px;
+  text-align: center;
+  float: right;
+}
+
+.container {
+  width: 150px;
+  height: 220px;
+  padding: 20px;
+  border: 10px outset #555555;
+  border-radius: 8px;
+}
+
+.messages {
+  overflow-y: auto;
+  height: 150px;
+}
+
+.message {
+  word-wrap: break-word;
+}
+
+.chatttl {
+  font-weight: bold;
+}
