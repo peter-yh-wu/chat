@@ -19,20 +19,19 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
     * @allmessages - dict w/ username as key and value array_of_{author,message}
     * @ischatopen - dict w/ username as key and bool as value
     */
-    this.state = { //TODO: TODO: TODO: TODO: add a show-hide attribute, and don't delete anything
+    this.state = {
       username: '',
       users: [],
       rooms: {},
       allmessages: {},
       ischatopen: {}
-    }; //TODO: make allmessages store all chats, later delete chats
+    };
 
     this.socket = io('http://127.0.0.1:5000');
 
     this.handleName = this.handleName.bind(this);
     this.updateMessagesWith = this.updateMessagesWith.bind(this);
     this.removeChat = this.removeChat.bind(this);
-    this.rch = this.rch.bind(this);
 
     //-----------------------
     // Find all users online
@@ -58,7 +57,6 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
         if(data['n1'] in this.state.allmessages) { //if there exist messages in the room already
           this.socket.emit('currmess', {'n1':data['n1'],'n2':data['n2'],'messages':this.state.allmessages[data['n1']]});
           this.socket.emit('checking', 'old room');
-          //this.socket.emit('checking', this.state.allmessages[data['n1']]);
         }
         else { //if no key in allmessages, i.e. there are no messages in the room
           this.socket.emit('currmess', {'n1':data['n1'],'n2':data['n2'],'messages':[]});
@@ -100,7 +98,6 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
 
   updateMessagesWith(user,message) {
     let allmess = Object.assign({},this.state.allmessages);
-    //allmess[user] = messages; //TODO: TODO: EDIT
     allmess[user].push(message);
     this.setState({allmessages: allmess});
   }
@@ -109,54 +106,12 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
     let chatbarr = Object.assign({},this.state.ischatopen);
     chatbarr[user] = false;
     this.setState({ischatopen: chatbarr});
-    //let allmess = Object.assign({},this.state.allmessages);
-    //delete allmess[user];
-    //allmess[user] = undefined;
-    //this.setState({allmessages: allmess});
-    //delete this.state.allmessages[user];
-    //this.state.allmessages[user] = undefined; //TODO: set a flag to -1 or something
-    //this.state.allmessages[user]['room'] = '_';
-    //this.setState({allmessages: this.state.allmessages});
-    //const allmess = this.state.allmessages;
-    //this.setState({allmessages: {}});
-    //this.setState({allmessages: allmess});
-    //rch(allmess);
   }
-  rch(allmess) {
-    this.setState({allmessages: allmess});
-  }
-  /*
-  updateChats(name) { //TODO: replace with 'removeChat(user)'
 
-    //this.socket.emit('checking',name);
-
-    let index = 0;
-
-    for (var i = 0; i < this.state.chats.length; i++) {
-      if (this.state.chats[i][2]==name)
-        index = i;
-    }
-
-    this.state.chats.splice(index, 1);
-    this.setState({chats: this.state.chats});
-
-  }
-  */
-
-  //TODO:TODO:TODO: do for loop stuff outside, maybe chatshtml too
-
-  render() {
-    //this.socket.emit('checking', this.state.allmessages);
-    const marr = Object.keys(this.state.allmessages).filter(u => this.state.ischatopen[u]);
-    //this.socket.emit('checking', marr);
-    // for(var i = 0; i < marr.length; i++) {
-    //   if(!this.state.ischatopen[marr[i]]) {
-    //     marr.splice(i,1);
-    //   }
-    // }
-    const chatshtml = marr.map((user) =>
+  render() { //TODO: CREATE A DUMMY LAST CHAT
+    let chatshtml = Object.getOwnPropertyNames(this.state.allmessages).map((user) =>
       <div class="child">
-        <Chat removeChat={this.removeChat} room={this.state.rooms[user]}
+        <Chat removeChat={this.removeChat} room={this.state.rooms[user]} ischatopen={this.state.ischatopen[user]}
           messages={this.state.allmessages[user]} u1={this.state.username}
           u2={user} updateMessagesWith={this.updateMessagesWith} soc={this.socket}/>
       </div>

@@ -30,8 +30,6 @@ class Chat extends React.Component{
         receiver: this.props.u2
       });
 
-      //this.socket.emit('checking', this.props.u1);
-
       this.setState({message: ''});
     }
 
@@ -65,10 +63,8 @@ class Chat extends React.Component{
     this.props.updateMessagesWith(this.props.u2,ndata);
   }
 
-  //TODO: TODO: TODO: SOCKET SEND TO OTHER USER, AND LOCAL ADD MESSAGE TO THIS USER
   handleKeyPress(e) {
     if(e.key === 'Enter') {
-      //this.socket.emit('checking', 'handleKeyPress');
       this.addToChat(this.state.message); //add message to this user's chat
       this.sendMessage(e); //add message to other user's chat
     }
@@ -93,12 +89,41 @@ class Chat extends React.Component{
   //<div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
 
   render(){ //TODO: CHANGE state.messages to props.messages
+    const ischatopen = this.props.ischatopen;
+
     const cmessages = this.props.messages.map(message =>
       <div class="message">
         <b>{message.author}</b>: {message.message}
       </div>
     );
 
+    const chat = ischatopen ? (
+      <div class="chatbox">
+        <div>
+          <button onClick={this.handleX} class="xbutton">X</button>
+        </div>
+        <div>
+          <div class="chatttl">{this.props.u2}</div>
+          <hr/>
+          <div class="messages">
+            {cmessages}
+          </div>
+        </div>
+        <div>
+          <hr/>
+          <input type="text" placeholder="message" onKeyPress={this.handleKeyPress}
+            className="form-control" value={this.state.message} onChange={ev => this.setState({message: ev.target.value})}/>
+        </div>
+      </div>
+    ) : (
+      <div/>
+    );
+
+
+    return (
+      <div>{chat}</div>
+    );
+    /*
     return (
       <div class="chatbox">
         <div>
@@ -118,6 +143,7 @@ class Chat extends React.Component{
         </div>
       </div>
     );
+    */
   }
 }
 
