@@ -26,10 +26,6 @@ class Userbox extends React.Component{
   }
 
   render() {
-    const selstyle = {
-      float: 'right'
-    };
-
     return (
       <div class="box">
         Name: <input type="text" placeholder="username" value={this.state.username}

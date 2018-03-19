@@ -11,13 +11,14 @@ class Selector extends React.Component {
     this.handleClick = this.handleClick.bind(this);
   };
 
-  handleClick(e) {
+  handleClick(e) { //TODO: TODO: TODO: CHAIN OF REACTIONS AFTER THIS DIDN"T WORK
     //ask to create room btw current user and clicked user
     const u1 = this.props.username;
     const u2 = e.currentTarget.textContent;
     const a1 = [u1,this.props.users[u1]];
     const a2 = [u2,this.props.users[u2]];
     this.socket.emit('chatreq',{'u1':a1, 'u2':a2});
+    this.socket.emit('checking',{'u1':a1, 'u2':a2});
   }
 
   render() {

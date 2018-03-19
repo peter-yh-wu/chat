@@ -5,6 +5,9 @@ app = Flask(__name__)
 app.config['SECRET_KET'] = 'mysecret'
 socketio = SocketIO(app)
 
+# -----------------------
+# Find all users online
+#
 @socketio.on('connect', namespace='/')
 def test_connect():
     print('Connected')
@@ -23,8 +26,16 @@ def test_disconnect():
     print('Client disconnected')
     socketio.emit('marco',broadcast=True)
 
-# when user logs in, emit all connected users,
-# and print all connected users
+# -----------------------
+# open a chat btw respective users and populate chat w/ messages
+#
+def getRoom(name1,name2):
+    roomstr = ''
+    if name1<name2:
+        roomstr = name1+'_'+name2
+    else:
+        roomstr = name2+'_'+name1
+    return roomstr
 
 @socketio.on('chatreq')
 def handleChatReq(data):
@@ -33,32 +44,39 @@ def handleChatReq(data):
     data['u2'] = [name of second user, their sid]
     the generated room name is username1_username2, where username1 < sername2
     '''
-    # tell dash to create a new chat btw these users
-    roomstr = ''
-    if data['u1'][0]<data['u2'][0]:
-        roomstr = data['u1'][0]+'_'+data['u2'][0]
-    else:
-        roomstr = data['u2'][0]+'_'+data['u1'][0]
-    join_room(roomstr,sid=data['u1'][1])
-    join_room(roomstr,sid=data['u2'][1])
-    print(roomstr)
+    # TODO: TODO: TODO: if room has been opened before, don't join room
+    # i.e. just send a signal to set ischatopen to true
+    #
+    roomstr = getRoom(data['u1'][0],data['u2'][0])
+    join_room(roomstr,sid=data['u1'][1]) # add user1 to chat room
+    join_room(roomstr,sid=data['u2'][1]) # add user2 to chat room
+    print('roomstr: '+roomstr)
 
-    # check if the other person already has the room open
-    # if so, send their chat
-    socketio.emit('checkroom',roomstr,room=roomstr)
+    # check if someone else in the room (in this case the second user) already
+    # has the room open; if so, they would [emit their chat to the room]
+    ndata = {'n1':data['u1'][0], 'n2':data['u2'][0]}
+    socketio.emit('checkroom',ndata,room=roomstr)
+        # TODO: disconnect this from chat.js
 
-    emit('showchat',{'u1':data['u1'],'u2':data['u2'],'room':roomstr})
-    # socketio.emit('fillchat',{'room': roomstr},room=roomstr)
+    # print(ndata)
+
+    # tell dash to create a new chat btw these users?
+    # emit('showchat',{'u1':data['u1'],'u2':data['u2'],'room':roomstr})
 
 @socketio.on('currmess')
-def handleCheck(data):
+def handleCheck(data): # data is {'n1':_,'n2':_,'messages':_}
     print(data)
-    socketio.emit('messroom',data,room=data['room'])
+    roomstr = getRoom(data['n1'],data['n2'])
+    ndata = {'n1':data['n1'], 'n2':data['n2'], 'room':roomstr, 'messages':data['messages']}
+    print('ndata: ')
+    print(ndata)
+    socketio.emit('showchat',ndata,room=roomstr)
 
 @socketio.on('checking')
 def handleCheck(data):
     print(data)
 
+# TODO: EVERY TIME I CLOSE THE WINDOW I GET ANOTHER MESSAGE SENDER
 @socketio.on('SEND_MESSAGE')
 def handleMess(data): # data is a dict
     print('sending to room '+data['room'])

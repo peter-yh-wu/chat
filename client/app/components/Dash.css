@@ -1,16 +1,19 @@
-#container {
-  overflow: hidden;
+.dash {
   font-family: Helvetica;
 }
 
-#inner {
+#chatcontainer {
+  margin: 0 auto;
+}
+
+#chatinner {
   width: auto;
-  display: flex;
-  flex-wrap: wrap;
+  text-align: center
 }
 
 .child {
-  float: left;
+  float: center;
   width: 225px;
   height: 300px;
+  display: inline-block;
 }
