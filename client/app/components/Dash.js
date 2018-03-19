@@ -9,7 +9,7 @@ import Chat from "./Chat";
 import io from "socket.io-client";
 import './Dash.css';
 
-class Dash extends React.Component{ //TODO: move all room handling to main.py
+class Dash extends React.Component{
   constructor(props) {
     super(props);
 
@@ -65,22 +65,16 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
       }
     });
 
-    //TODO: add ischatopen
-    //TODO: consolidate this function
     this.socket.on('showchat', data => {
       if(this.state.username==data['n1']) {
         if (!(data['n2'] in this.state.allmessages)) {
-          this.socket.emit('checking', 'no chat history');
           this.state.rooms[data['n2']] = data['room'];
 
           let allmess = Object.assign({},this.state.allmessages);
           allmess[data['n2']] = data['messages'];
           this.setState({allmessages: allmess});
-          //this.socket.emit('checking', this.state.allmessages);
         }
         else if (Object.keys(this.state.allmessages[data['n2']]).length < data['messages'].length) {
-          this.socket.emit('checking', 'yes chat history');
-
           let allmess = Object.assign({},this.state.allmessages);
           allmess[data['n2']] = data['messages'];
           this.setState({allmessages: allmess});
@@ -108,7 +102,7 @@ class Dash extends React.Component{ //TODO: move all room handling to main.py
     this.setState({ischatopen: chatbarr});
   }
 
-  render() { //TODO: CREATE A DUMMY LAST CHAT
+  render() {
     let chatshtml = Object.getOwnPropertyNames(this.state.allmessages).map((user) =>
       <div class="child">
         <Chat removeChat={this.removeChat} room={this.state.rooms[user]} ischatopen={this.state.ischatopen[user]}

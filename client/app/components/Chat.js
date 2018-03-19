@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from 'react-dom';
 import io from "socket.io-client";
 import './Chat.css';
 
@@ -11,7 +12,7 @@ class Chat extends React.Component{
     */
     this.state = {
       message: ''
-    };//messages: this.props.messages
+    };
 
     this.socket = this.props.soc;
 
@@ -19,7 +20,6 @@ class Chat extends React.Component{
     * handles the new message that the user entered
     * message is received by the server
     */
-    //TODO: TODO: TODO: SOCKET SEND TO OTHER USER, AND LOCAL ADD MESSAGE TO THIS USER
     this.sendMessage = ev => {
       ev.preventDefault();
 
@@ -36,13 +36,9 @@ class Chat extends React.Component{
     /*
     * message is received by the other user
     */
-    //TODO: TODO: TODO: SOCKET SEND TO OTHER USER, AND LOCAL ADD MESSAGE TO THIS USER
     this.socket.on('RECEIVE_MESSAGE', data => {
       if(data['room']==this.props.room && this.props.u1==data['receiver']) {
-        this.socket.emit('checking', {'receive': this.props.u1});
-        //this.socket.emit('checking', data);
         const ndata = {'author': data['author'], 'message': data['message']};
-        //addMessage(ndata);
         this.props.updateMessagesWith(this.props.u2,ndata);
       }
     });
@@ -50,7 +46,7 @@ class Chat extends React.Component{
     this.handleX = this.handleX.bind(this);
     this.addToChat = this.addToChat.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    //this.scrollToBottom = this.scrollToBottom.bind(this);
+    this.scrollToBottom = this.scrollToBottom.bind(this);
   }
 
   handleX(e) {
@@ -70,20 +66,26 @@ class Chat extends React.Component{
     }
   }
 
-  scrollToBottom() {
+  scrollToBottom() { //TODO: SCROLL
+    //const endnode = ReactDOM.findDOMNode(this.refs.endm);
+    //this.messagesEnd.scrollIntoView();
     //this.messagesEnd.scrollIntoView({ behavior: "smooth" });
-  }
-
-  componentWillMount() {
-    //this.setState({messages: this.props.messages})
+    //this.socket.emit('checking','scrolling');
   }
 
   componentDidMount() {
     //this.scrollToBottom();
+    if(this.props.ischatopen) {
+      this.node.scrollIntoView();
+      //this.scrollToBottom();
+    }
   }
 
   componentDidUpdate() { //TODO: TODO: STRIP EVERYTHING TO BARE BONES
-    //this.scrollToBottom();
+    if(this.props.ischatopen) {
+      this.node.scrollIntoView();
+      //this.scrollToBottom();
+    }
   }
 
   //<div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
@@ -106,7 +108,12 @@ class Chat extends React.Component{
           <div class="chatttl">{this.props.u2}</div>
           <hr/>
           <div class="messages">
-            {cmessages}
+            {this.props.messages.map(message =>
+              <div class="message">
+                <b>{message.author}</b>: {message.message}
+              </div>
+            )}
+            <div ref={node => this.node = node} />
           </div>
         </div>
         <div>

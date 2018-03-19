@@ -44,9 +44,6 @@ def handleChatReq(data):
     data['u2'] = [name of second user, their sid]
     the generated room name is username1_username2, where username1 < sername2
     '''
-    # TODO: TODO: TODO: if room has been opened before, don't join room
-    # i.e. just send a signal to set ischatopen to true
-    #
     roomstr = getRoom(data['u1'][0],data['u2'][0])
     join_room(roomstr,sid=data['u1'][1]) # add user1 to chat room
     join_room(roomstr,sid=data['u2'][1]) # add user2 to chat room
@@ -56,12 +53,6 @@ def handleChatReq(data):
     # has the room open; if so, they would [emit their chat to the room]
     ndata = {'n1':data['u1'][0], 'n2':data['u2'][0]}
     socketio.emit('checkroom',ndata,room=roomstr)
-        # TODO: disconnect this from chat.js
-
-    # print(ndata)
-
-    # tell dash to create a new chat btw these users?
-    # emit('showchat',{'u1':data['u1'],'u2':data['u2'],'room':roomstr})
 
 @socketio.on('currmess')
 def handleCheck(data): # data is {'n1':_,'n2':_,'messages':_}
@@ -76,7 +67,6 @@ def handleCheck(data): # data is {'n1':_,'n2':_,'messages':_}
 def handleCheck(data):
     print(data)
 
-# TODO: EVERY TIME I CLOSE THE WINDOW I GET ANOTHER MESSAGE SENDER
 @socketio.on('SEND_MESSAGE')
 def handleMess(data): # data is a dict
     print('sending to room '+data['room'])
