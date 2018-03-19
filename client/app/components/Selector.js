@@ -2,6 +2,9 @@ import React from 'react';
 import './Selector.css';
 import io from "socket.io-client";
 
+/*
+* class for component in Userbox that allows user to pick who to chat with
+*/
 class Selector extends React.Component {
   constructor(props) {
     super(props);
@@ -11,18 +14,19 @@ class Selector extends React.Component {
     this.handleClick = this.handleClick.bind(this);
   };
 
-  handleClick(e) { //TODO: TODO: TODO: CHAIN OF REACTIONS AFTER THIS DIDN"T WORK
-    //ask to create room btw current user and clicked user
+  /*
+  * ask to create room & open chat this user and clicked user
+  */
+  handleClick(e) {
     const u1 = this.props.username;
     const u2 = e.currentTarget.textContent;
     const a1 = [u1,this.props.users[u1]];
     const a2 = [u2,this.props.users[u2]];
     this.socket.emit('chatreq',{'u1':a1, 'u2':a2});
-    this.socket.emit('checking',{'u1':a1, 'u2':a2});
   }
 
   render() {
-    const usershtml = Object.keys(this.props.users).map((cu) =>
+    const usershtml = Object.keys(this.props.users).filter(u => u!=this.props.username).map((cu) =>
       <a onClick={this.handleClick}>{cu}</a>
     );
 

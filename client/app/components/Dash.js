@@ -1,23 +1,27 @@
-/*
-* Class for user dashboard, which houses all their chats and
-* the user-box, which contains info. on all the users.
-*/
-
 import React from "react";
 import Userbox from "./Userbox";
 import Chat from "./Chat";
 import io from "socket.io-client";
 import './Dash.css';
 
+/*
+* Class for user dashboard, which houses all of the user's chats and
+* the user-box, an interface for the user to set username and open chats
+*/
 class Dash extends React.Component{
   constructor(props) {
     super(props);
 
     /*
-    * @users - dict w/ username as key and sid as value
-    *   [note users contains all users online]
-    * @allmessages - dict w/ username as key and value array_of_{author,message}
-    * @ischatopen - dict w/ username as key and bool as value
+    * @username - name of the user
+    * @users - dict w/ username as key and session id (sid) as value;
+    *   contains info. about all users online
+    * @rooms - dict w/ username as key and the name of the respective chat room
+    *   as value
+    * @allmessages - dict w/ username as key and an array of messages, with each
+    *   message represented as {author:'name',message:'mess'}, as value
+    * @ischatopen - dict w/ username as key and bool which represents whether
+    *   chatbox is visible as value
     */
     this.state = {
       username: '',
@@ -27,7 +31,7 @@ class Dash extends React.Component{
       ischatopen: {}
     };
 
-    this.socket = io('http://127.0.0.1:5000');
+    this.socket = io('http://127.0.0.1:5000'); //arbitrary
 
     this.handleName = this.handleName.bind(this);
     this.updateMessagesWith = this.updateMessagesWith.bind(this);
@@ -36,11 +40,18 @@ class Dash extends React.Component{
     //-----------------------
     // Find all users online
     //
+    /*
+    * received from server, received by server
+    * used by server to see who's online
+    */
     this.socket.on('marco', () => {
       this.state.users = [];
       this.socket.emit('polo',{name:this.state.username, sid:this.socket.id});
     });
 
+    /*
+    * adds received user to list of online users
+    */
     this.socket.on('welcome', data => {
       var cname = data['name'];
       if(cname!='' && !(Object.keys(this.state.users)).includes(cname)) {
@@ -50,21 +61,25 @@ class Dash extends React.Component{
     });
 
     //-----------------------
-    // open a chat btw respective users and populate chat w/ messages
+    // open a chat between respective users and populate chat w/ messages
     //
+    /*
+    * sends chat history w/ given user to the server
+    */
     this.socket.on('checkroom', data => {
       if(this.state.username==data['n2']) {
         if(data['n1'] in this.state.allmessages) { //if there exist messages in the room already
           this.socket.emit('currmess', {'n1':data['n1'],'n2':data['n2'],'messages':this.state.allmessages[data['n1']]});
-          this.socket.emit('checking', 'old room');
         }
         else { //if no key in allmessages, i.e. there are no messages in the room
           this.socket.emit('currmess', {'n1':data['n1'],'n2':data['n2'],'messages':[]});
-          this.socket.emit('checking', 'new room');
         }
       }
     });
 
+    /*
+    * adds given data to chat history and makes chat visible on screen
+    */
     this.socket.on('showchat', data => {
       if(this.state.username==data['n1']) {
         if (!(data['n2'] in this.state.allmessages)) {
@@ -85,17 +100,26 @@ class Dash extends React.Component{
     });
   };
 
+  /*
+  * sets username to given name 'user'
+  */
   handleName(user) {
     this.setState({username: user});
     this.socket.emit('polo',{name:user, sid:this.socket.id});
   }
 
+  /*
+  * adds given message to chat history with given user
+  */
   updateMessagesWith(user,message) {
     let allmess = Object.assign({},this.state.allmessages);
     allmess[user].push(message);
     this.setState({allmessages: allmess});
   }
 
+  /*
+  * hides chat with given user
+  */
   removeChat(user) {
     let chatbarr = Object.assign({},this.state.ischatopen);
     chatbarr[user] = false;
@@ -115,8 +139,7 @@ class Dash extends React.Component{
       <div class="dash">
         <h1 font-size='32px'>Chat Server</h1>
         <Userbox changeName={this.handleName} users={this.state.users} soc={this.socket}/>
-        <div>{this.state.username}</div>
-        <div>{Object.keys(this.state.users).toString()}</div>
+        <hr/>
         <div id="chatcontainer">
           <div id="chatinner">{chatshtml}</div>
         </div>

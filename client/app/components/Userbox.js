@@ -3,6 +3,9 @@ import Selector from "./Selector";
 import io from "socket.io-client";
 import './Userbox.css';
 
+/*
+* interface for the user to set username and open chats
+*/
 class Userbox extends React.Component{
   constructor(props){
     super(props);
@@ -15,10 +18,16 @@ class Userbox extends React.Component{
     this.handleKeyPress = this.handleKeyPress.bind(this);
   };
 
+  /*
+  * provides functionality for showing typed text in input element
+  */
   handleChange(e) {
     this.setState({username: e.target.value});
   }
 
+  /*
+  * changes username when user presses 'Enter' key
+  */
   handleKeyPress(e) {
     if(e.key === 'Enter') {
       this.props.changeName(e.target.value);

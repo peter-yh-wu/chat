@@ -1,10 +1,12 @@
 .xbutton {
   border-radius: 8px;
-  background-color: white;
-  color: black;
+  background-color: #e2edff;
+  color: #555555;
   border: 2px solid #555555;
   font-size: 12px;
+  font-weight: bold;
   text-align: center;
+  font-family: "Trebuchet MS";
   float: right;
 }
 

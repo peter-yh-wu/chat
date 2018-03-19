@@ -1,3 +1,9 @@
+"""
+Code for Flask Server
+
+handles room-related requests and broadcasts to all clients
+"""
+
 from flask import Flask
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 
@@ -10,66 +16,74 @@ socketio = SocketIO(app)
 #
 @socketio.on('connect', namespace='/')
 def test_connect():
-    print('Connected')
+    '''
+    retrieves all currently online users whenever a new user connects
+    '''
     socketio.emit('marco',broadcast=True)
 
 @socketio.on('polo')
 def handlePolo(data):
     '''
+    prompts all clients to add given user to their list of online users
     data is a dict w/ keys 'name' (username) and 'sid' (client session id)
     '''
     socketio.emit('welcome',data,broadcast=True)
-    print(data['name'])
 
 @socketio.on('disconnect', namespace='/')
 def test_disconnect():
-    print('Client disconnected')
+    '''
+    retrieves all currently online users whenever a new user disconnects
+    '''
     socketio.emit('marco',broadcast=True)
 
 # -----------------------
 # open a chat btw respective users and populate chat w/ messages
 #
 def getRoom(name1,name2):
+    '''
+    returns the name of the room for users 'name1' and 'name2'
+    the generated room name is 'username1 username2', where username1 < username2
+    '''
     roomstr = ''
     if name1<name2:
-        roomstr = name1+'_'+name2
+        roomstr = name1+' '+name2
     else:
-        roomstr = name2+'_'+name1
+        roomstr = name2+' '+name1
     return roomstr
 
 @socketio.on('chatreq')
 def handleChatReq(data):
     '''
-    data['u1'] = [name of first user, their sid]
-    data['u2'] = [name of second user, their sid]
-    the generated room name is username1_username2, where username1 < sername2
+    prompts other user in the room to return their chat history w/ the user who
+    sent this chat request
+    @data -
+        data['u1'] = [name of first user, their sid]
+        data['u2'] = [name of second user, their sid]
     '''
     roomstr = getRoom(data['u1'][0],data['u2'][0])
     join_room(roomstr,sid=data['u1'][1]) # add user1 to chat room
     join_room(roomstr,sid=data['u2'][1]) # add user2 to chat room
-    print('roomstr: '+roomstr)
 
-    # check if someone else in the room (in this case the second user) already
-    # has the room open; if so, they would [emit their chat to the room]
     ndata = {'n1':data['u1'][0], 'n2':data['u2'][0]}
     socketio.emit('checkroom',ndata,room=roomstr)
 
 @socketio.on('currmess')
-def handleCheck(data): # data is {'n1':_,'n2':_,'messages':_}
-    print(data)
+def handleCheck(data):
+    '''
+    prompts client Dash to display given message.
+    note this client is the same one that sent 'chatreq' to the server.
+    @data - {'n1':'name','n2':'name','messages':[...]}
+    '''
     roomstr = getRoom(data['n1'],data['n2'])
     ndata = {'n1':data['n1'], 'n2':data['n2'], 'room':roomstr, 'messages':data['messages']}
-    print('ndata: ')
-    print(ndata)
     socketio.emit('showchat',ndata,room=roomstr)
 
-@socketio.on('checking')
-def handleCheck(data):
-    print(data)
-
 @socketio.on('SEND_MESSAGE')
-def handleMess(data): # data is a dict
-    print('sending to room '+data['room'])
+def handleMess(data):
+    '''
+    sends the given message to the other user in the given room.
+    @data - a dict with keys 'author','message','room', and 'receiver'
+    '''
     socketio.emit('RECEIVE_MESSAGE',data,room=data['room'])
 
 if __name__ == '__main__':
